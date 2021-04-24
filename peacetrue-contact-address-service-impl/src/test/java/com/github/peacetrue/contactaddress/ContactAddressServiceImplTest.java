@@ -89,9 +89,22 @@ class ContactAddressServiceImplTest {
     }
 
     @Test
+    @Order(55)
+    void setDefaults() {
+        ContactAddressSetDefaults params = new ContactAddressSetDefaults();
+        params.setId(vo.getId());
+        params.setOperatorId(1L);
+        service.setDefaults(params)
+                .as(StepVerifier::create)
+                .expectNext(1)
+                .verifyComplete();
+    }
+
+    @Test
     @Order(60)
     void delete() {
         ContactAddressDelete params = new ContactAddressDelete(vo.getId());
+        params.setOperatorId(1L);
         service.delete(params)
                 .as(StepVerifier::create)
                 .expectNext(1)

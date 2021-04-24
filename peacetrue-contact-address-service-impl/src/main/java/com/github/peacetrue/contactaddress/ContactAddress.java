@@ -32,6 +32,8 @@ public class ContactAddress implements Serializable, com.github.peacetrue.core.I
     private Long addressId;
     /** 详细地址 */
     private String addressDetail;
+    /** 默认地址 */
+    private Boolean defaults;
     /** 上个联系地址. 0 表示新建，后续修改关联之前的联系地址主键 */
     private Long sourceId;
     /** 创建者. 主键 */

@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  * @author xiayx
  */
 @SpringBootTest(classes = TestControllerContactAddressAutoConfiguration.class)
-@ActiveProfiles({"contact-address-controller-test", "contact-address-service-test" })
+@ActiveProfiles({"contact-address-controller-test", "contact-address-service-test"})
 @AutoConfigureWebTestClient
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ContactAddressControllerTest {
@@ -90,10 +90,26 @@ class ContactAddressControllerTest {
     }
 
     @Test
+    @Order(55)
+    void setDefaults() {
+        ContactAddressSetDefaults setDefaults = new ContactAddressSetDefaults();
+        setDefaults.setId(ContactAddressServiceImplTest.vo.getId());
+        setDefaults.setOperatorId(ContactAddressServiceImplTest.ADD.getOperatorId());
+        this.client.put()
+                .uri("/contact-addresses", ContactAddressServiceImplTest.vo.getId())
+                .bodyValue(setDefaults)
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody(Integer.class).isEqualTo(1);
+    }
+
+    @Test
     @Order(60)
     void delete() {
         this.client.delete()
-                .uri("/contact-addresses/{0}", ContactAddressServiceImplTest.vo.getId())
+                .uri("/contact-addresses?id={0}&operatorId=1", ContactAddressServiceImplTest.vo.getId())
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()

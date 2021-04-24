@@ -49,23 +49,30 @@ public class ContactAddressController {
 
     @GetMapping("/{id}")
     public Mono<ContactAddressVO> getByUrlPathVariable(@PathVariable Long id, String... projection) {
-        log.info("获取联系地址信息(请求方法+路径变量)详情[{}]", id);
+        log.info("获取联系地址信息(请求方法+路径变量)[{}]", id);
         return contactAddressService.get(new ContactAddressGet(id), projection);
     }
 
     @RequestMapping("/get")
     public Mono<ContactAddressVO> getByPath(ContactAddressGet params, String... projection) {
-        log.info("获取联系地址信息(请求路径+参数变量)详情[{}]", params);
+        log.info("获取联系地址信息(请求路径+参数变量)[{}]", params);
         return contactAddressService.get(params, projection);
     }
 
-    @PutMapping(value = {"", "/*" }, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @GetMapping(params = "filter=defaults")
+    public Mono<ContactAddressVO> getDefaults(ContactAddressGet params, String... projection) {
+        log.info("获取默认联系地址信息(请求路径+参数变量)[{}]", params);
+        params.setDefaults(true);
+        return contactAddressService.get(params, projection);
+    }
+
+    @PutMapping(value = {"", "/*"}, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public Mono<Integer> modifyByForm(ContactAddressModify params) {
         log.info("修改联系地址信息(请求方法+表单参数)[{}]", params);
         return contactAddressService.modify(params);
     }
 
-    @PutMapping(value = {"", "/*" }, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = {"", "/*"}, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<Integer> modifyByJson(@RequestBody ContactAddressModify params) {
         log.info("修改联系地址信息(请求方法+JSON参数)[{}]", params);
         return contactAddressService.modify(params);

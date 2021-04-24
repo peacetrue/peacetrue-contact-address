@@ -68,6 +68,7 @@ public class ContactAddressServiceImpl implements ContactAddressService {
         ContactAddress entity = BeanUtils.map(params, ContactAddress.class);
         Operators.setCreateModify(params, entity);
         entity.setSourceId(0L);
+        entity.setDefaults(false);
         return entityOperations.insert(entity)
                 .map(item -> BeanUtils.map(item, ContactAddressVO.class))
                 .doOnNext(item -> eventPublisher.publishEvent(new PayloadApplicationEvent<>(item, params)));
@@ -113,10 +114,10 @@ public class ContactAddressServiceImpl implements ContactAddressService {
     @Transactional(readOnly = true)
     public Mono<ContactAddressVO> get(ContactAddressGet params, String... projection) {
         log.info("获取联系地址信息[{}]", params);
-//        Criteria where = CriteriaUtils.and(
-//                CriteriaUtils.nullableCriteria(Criteria.where("id")::is, params::getId),
-//        );
-        Criteria where = Criteria.where("id").is(params.getId());
+        Criteria where = CriteriaUtils.and(
+                CriteriaUtils.nullableCriteria(Criteria.where("id")::is, params::getId),
+                CriteriaUtils.nullableCriteria(Criteria.where("defaults")::is, params::getDefaults)
+        );
         return entityOperations.selectOne(Query.query(where), ContactAddress.class)
                 .map(item -> BeanUtils.map(item, ContactAddressVO.class))
                 .doOnNext(item -> eventPublisher.publishEvent(new PayloadApplicationEvent<>(item, params)))
@@ -163,6 +164,32 @@ public class ContactAddressServiceImpl implements ContactAddressService {
 
     @Override
     @Transactional
+    public Mono<Integer> setDefaults(ContactAddressSetDefaults params) {
+        log.info("设置用户[{}]的默认联系地址为[{}]", params.getOperatorId(), params.getId());
+        Query idQuery = QueryUtils.id(params::getId);
+        return entityOperations.selectOne(idQuery, ContactAddress.class)
+                .doOnNext(entity -> log.debug("取得联系地址[{}]", entity))
+                .filter(entity -> Boolean.FALSE.equals(entity.getDefaults()))
+                .flatMap(entity -> {
+                    log.debug("取消用户[{}]已经设置的默认联系地址", params.getOperatorId());
+                    Update setFalse = UpdateUtils.setModify(Update.update("defaults", false), params);
+                    Query trueQuery = Query.query(Criteria.where("creatorId").is(params.getOperatorId())
+                            .and(Criteria.where("defaults").isTrue()));
+                    return entityOperations.update(trueQuery, setFalse, ContactAddress.class)
+                            .doOnNext(count -> log.debug("取消[{}]条用户[{}]已经设置的默认联系地址", count, params.getOperatorId()))
+                            .thenReturn(BeanUtils.map(entity, ContactAddressVO.class));
+                })
+                .flatMap(vo -> {
+                    log.debug("设置用户[{}]的默认联系地址为[{}]，执行 SQL 更新", params.getOperatorId(), params.getId());
+                    Update update = UpdateUtils.setModify(Update.update("defaults", true), params);
+                    return entityOperations.update(idQuery, update, ContactAddress.class);
+                })
+                .switchIfEmpty(Mono.just(0))
+                ;
+    }
+
+    @Override
+    @Transactional
     public Mono<Integer> delete(ContactAddressDelete params) {
         log.info("删除联系地址信息[{}]", params);
         Query idQuery = QueryUtils.id(params::getId);
@@ -173,7 +200,8 @@ public class ContactAddressServiceImpl implements ContactAddressService {
                     return entityOperations.update(idQuery, update, ContactAddress.class);
                 })
                 .doOnNext(vo -> eventPublisher.publishEvent(new PayloadApplicationEvent<>(vo, params)))
-                .switchIfEmpty(Mono.just(0));
+                .switchIfEmpty(Mono.just(0))
+                ;
     }
 
 }

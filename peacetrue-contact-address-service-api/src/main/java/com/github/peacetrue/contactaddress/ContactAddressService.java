@@ -31,6 +31,9 @@ public interface ContactAddressService {
     /** 修改 */
     Mono<Integer> modify(ContactAddressModify params);
 
+    /** 设置默认地址 */
+    Mono<Integer> setDefaults(ContactAddressSetDefaults params);
+
     /** 删除 */
     Mono<Integer> delete(ContactAddressDelete params);
 

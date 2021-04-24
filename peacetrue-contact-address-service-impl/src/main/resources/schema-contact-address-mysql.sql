@@ -6,6 +6,7 @@ create table contact_address
     contact_phone_code VARCHAR(255)    NOT NULL COMMENT '联系人手机号',
     address_id         BIGINT unsigned NOT NULL COMMENT '地区. 主键',
     address_detail     VARCHAR(255)    NOT NULL COMMENT '详细地址',
+    defaults           bit             NOT NULL COMMENT '默认联系地址',
     source_id          bigint unsigned not null comment '上个联系地址. 0 表示新建，后续修改关联之前的联系地址主键',
     creator_id         bigint unsigned not null comment '创建者. 主键',
     created_time       datetime        not null comment '创建时间',
