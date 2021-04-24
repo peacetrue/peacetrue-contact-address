@@ -1,0 +1,7 @@
+description '联系地址客户端'
+
+dependencies {
+    api project(":peacetrue-contact-address-service-api")
+    api 'org.springframework.data:spring-data-commons'
+    api 'com.playtika.reactivefeign:feign-reactor-spring-configuration'
+}

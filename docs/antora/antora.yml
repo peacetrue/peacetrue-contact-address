@@ -1,0 +1,9 @@
+name: peacetrue-contact-address
+title: 联系地址
+version: master
+asciidoc:
+  attributes:
+    numbered: ''
+start_page: ROOT:index.adoc
+nav:
+  - modules/ROOT/nav.adoc
